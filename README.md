@@ -27,6 +27,10 @@ Ce système vous permet de :
 - **Python 3.9+** ([Télécharger](https://www.python.org/downloads/))
 - **Docker Desktop** ([Télécharger](https://www.docker.com/products/docker-desktop/))
 - **Git** ([Télécharger](https://git-scm.com/downloads))
+- **Tesseract OCR** ([Guide d'installation](docs/tesseract-installation.md))
+  - Windows: Télécharger depuis [UB-Mannheim](https://github.com/UB-Mannheim/tesseract/wiki)
+  - macOS: `brew install tesseract tesseract-lang`
+  - Linux: `sudo apt-get install tesseract-ocr tesseract-ocr-fra tesseract-ocr-eng`
 - **Éditeur de code** (VS Code recommandé)
 
 ### Vérifier l'installation :
@@ -43,6 +47,13 @@ docker --version
 # Vérifier Git
 git --version
 # Devrait afficher: git version 2.x
+
+# Vérifier Tesseract
+tesseract --version
+# Devrait afficher: tesseract 5.x.x
+
+# Vérifier toutes les dépendances automatiquement
+python scripts/check_dependencies.py
 ```
 
 ## 🚀 Installation rapide
