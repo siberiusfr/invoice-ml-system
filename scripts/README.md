@@ -66,6 +66,7 @@ python scripts/export_from_label_studio.py
 **Usage :**
 ```bash
 python scripts/prepare_dataset.py
+python scripts/prepare_dataset.py --input exports/annotations_20240101.json
 ```
 
 **Prérequis :**
@@ -73,11 +74,10 @@ python scripts/prepare_dataset.py
 
 **Ce qu'il fait :**
 1. Charge les annotations exportées
-2. Convertit au format YOLO ou LayoutLM
+2. Convertit au format YOLO
 3. Split en train/val/test (80/10/10)
-4. Sauvegarde dans `data/processed/`
-
-**À venir...**
+4. Génère le fichier data.yaml pour YOLO
+5. Sauvegarde dans `data/processed/yolo_dataset/`
 
 ---
 
@@ -88,15 +88,16 @@ python scripts/prepare_dataset.py
 **Usage :**
 ```bash
 python scripts/auto_retrain.py
+python scripts/auto_retrain.py --dry-run  # Mode test
 ```
 
 **Ce qu'il fait :**
-1. Vérifie s'il y a de nouvelles annotations
-2. Si oui, réentraîne le modèle
-3. Compare avec le modèle actuel
-4. Déploie si meilleur
-
-**À venir...**
+1. Vérifie s'il y a assez de nouvelles annotations
+2. Exporte depuis Label Studio
+3. Prépare le dataset
+4. Entraîne le modèle
+5. Évalue les performances
+6. Sauvegarde les informations d'entraînement
 
 ---
 
@@ -107,9 +108,31 @@ python scripts/auto_retrain.py
 **Usage :**
 ```bash
 python scripts/test_api.py
+python scripts/test_api.py --file data/raw/invoices/facture.pdf
+python scripts/test_api.py --api http://192.168.1.100:8000
 ```
 
-**À venir...**
+**Ce qu'il fait :**
+1. Vérifie le health check de l'API
+2. Récupère les statistiques
+3. Teste l'extraction sur une facture
+4. Affiche les résultats détaillés
+
+---
+
+### 6. setup_auto_retrain.py
+
+**Fonction :** Configurer le réentraînement automatique planifié
+
+**Usage :**
+```bash
+python scripts/setup_auto_retrain.py
+```
+
+**Ce qu'il fait :**
+1. Génère les commandes pour cron (Linux/Mac)
+2. Génère les commandes pour Task Scheduler (Windows)
+3. Affiche les instructions de configuration
 
 ---
 
