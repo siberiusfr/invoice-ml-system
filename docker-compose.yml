@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  label-studio:
+    image: heartexlabs/label-studio:latest
+    container_name: invoice-label-studio
+    ports:
+      - "8080:8080"
+    volumes:
+      # Données persistantes de Label Studio
+      - ./data/label-studio:/label-studio/data
+      # Fichiers à annoter
+      - ./data/raw/invoices:/label-studio/invoices:ro
+    environment:
+      # Configuration Label Studio
+      - LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
+      - LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT=/label-studio/invoices
+    restart: unless-stopped
+    networks:
+      - invoice-network
+
+networks:
+  invoice-network:
+    driver: bridge

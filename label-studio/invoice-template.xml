@@ -1,0 +1,57 @@
+<View>
+  <Style>
+    .lsf-main-content.lsf-requesting {
+      opacity: 0.8;
+    }
+    .lsf-main-content {
+      background-color: #f8f9fa;
+    }
+  </Style>
+  
+  <!-- Image de la facture -->
+  <Image name="image" value="$image" zoom="true" zoomControl="true" rotateControl="true"/>
+  
+  <!-- Labels pour annotation -->
+  <RectangleLabels name="label" toName="image" strokeWidth="3" fillOpacity="0.2">
+    <Label value="numero_facture" background="#FF6B6B" hint="Numéro unique de la facture (ex: INV-2024-001)"/>
+    <Label value="date_facture" background="#4ECDC4" hint="Date d'émission de la facture"/>
+    <Label value="montant_ht" background="#95E1D3" hint="Montant hors taxes"/>
+    <Label value="montant_tva" background="#F38181" hint="Montant de la TVA"/>
+    <Label value="montant_ttc" background="#FFC947" hint="Montant total TTC (le plus important !)"/>
+    <Label value="nom_fournisseur" background="#AA96DA" hint="Nom ou raison sociale du fournisseur"/>
+    <Label value="adresse_fournisseur" background="#FCBAD3" hint="Adresse complète du fournisseur"/>
+    <Label value="siret_fournisseur" background="#A8D8EA" hint="Numéro SIRET du fournisseur"/>
+    <Label value="ligne_produit" background="#FFFFD2" hint="Ligne de produit/service facturé"/>
+  </RectangleLabels>
+  
+  <!-- Instructions pour l'annotateur -->
+  <Header value="Instructions d'annotation :" size="4"/>
+  <Text name="instructions" value="
+    1. Sélectionnez le label approprié dans la liste de droite
+    2. Tracez un rectangle autour de l'information correspondante
+    3. Vérifiez que le rectangle capture TOUT le texte (pas coupé)
+    4. Pour le montant_ttc : c'est le montant final à payer (TRÈS IMPORTANT)
+    5. Vous pouvez zoomer avec la molette ou les boutons
+    6. Une fois terminé, cliquez sur 'Submit'
+  "/>
+  
+  <!-- Métadonnées optionnelles -->
+  <Choices name="quality" toName="image" choice="single" showInline="true">
+    <Header value="Qualité de la facture :"/>
+    <Choice value="excellente" hint="Texte très lisible"/>
+    <Choice value="bonne" hint="Texte lisible"/>
+    <Choice value="moyenne" hint="Quelques difficultés de lecture"/>
+    <Choice value="mauvaise" hint="Texte difficilement lisible"/>
+  </Choices>
+  
+  <Choices name="type_facture" toName="image" choice="single" showInline="true">
+    <Header value="Type de facture :"/>
+    <Choice value="standard"/>
+    <Choice value="avoir" hint="Note de crédit"/>
+    <Choice value="acompte"/>
+    <Choice value="autre"/>
+  </Choices>
+  
+  <TextArea name="notes" toName="image" placeholder="Notes optionnelles : difficultés rencontrées, particularités de cette facture, etc." rows="2" editable="true"/>
+  
+</View>

@@ -1,0 +1,57 @@
+# ============================================
+# INVOICE ML SYSTEM - Requirements
+# ============================================
+
+# Core ML & Computer Vision
+# -------------------------
+torch==2.1.0
+torchvision==0.16.0
+ultralytics==8.0.228          # YOLO pour détection d'objets
+transformers==4.35.2          # Pour LayoutLM (optionnel)
+datasets==2.15.0
+
+# Image Processing & OCR
+# ----------------------
+opencv-python==4.8.1.78
+Pillow==10.1.0
+pytesseract==0.3.10
+pdf2image==1.16.3
+PyMuPDF==1.23.8               # Pour lire les PDFs
+
+# API & Web
+# ---------
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+pydantic==2.5.0
+aiofiles==23.2.1
+
+# Label Studio Integration
+# -------------------------
+label-studio-sdk==0.0.32
+requests==2.31.0
+
+# Data Science & Utils
+# --------------------
+numpy==1.24.3
+pandas==2.1.3
+scikit-learn==1.3.2
+pyyaml==6.0.1
+python-dotenv==1.0.0
+
+# Monitoring & Logging
+# --------------------
+tqdm==4.66.1
+colorama==0.4.6
+
+# Development & Testing
+# ---------------------
+pytest==7.4.3
+black==23.11.0
+flake8==6.1.0
+
+# Optional: For advanced features
+# --------------------------------
+# mlflow==2.8.1               # Pour tracking des expériences
+# wandb==0.16.0               # Alternative à MLflow
+# schedule==1.2.0             # Pour le réentraînement automatique

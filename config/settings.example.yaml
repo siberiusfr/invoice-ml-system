@@ -1,0 +1,109 @@
+# ============================================
+# INVOICE ML SYSTEM - Configuration
+# ============================================
+
+# Label Studio Configuration
+# ---------------------------
+label_studio:
+  url: "http://localhost:8080"
+  # Générer votre API key depuis: Account Settings > Access Token
+  api_key: "YOUR_API_KEY_HERE"
+  project_id: 1  # ID de votre projet (visible dans l'URL)
+
+# Training Configuration
+# ----------------------
+training:
+  # Nombre minimum de nouvelles annotations pour déclencher un réentraînement
+  min_new_samples: 50
+  
+  # Amélioration minimale du F1-score pour déployer le nouveau modèle (1% = 0.01)
+  performance_threshold: 0.01
+  
+  # Paramètres d'entraînement YOLO
+  yolo:
+    model: "yolov8n.pt"  # n=nano (rapide), s=small, m=medium, l=large
+    epochs: 100
+    batch_size: 16
+    img_size: 640
+    patience: 20  # Early stopping
+  
+  # Paramètres d'entraînement LayoutLM (optionnel)
+  layoutlm:
+    model: "microsoft/layoutlmv3-base"
+    epochs: 30
+    batch_size: 4
+    learning_rate: 0.00005
+
+# API Configuration
+# -----------------
+api:
+  host: "0.0.0.0"
+  port: 8000
+  reload: true  # Dev mode
+  
+  # Seuil de confiance minimum pour accepter une extraction automatique
+  confidence_threshold: 0.85
+  
+  # Envoyer vers Label Studio si confiance < threshold
+  feedback_loop:
+    enabled: true
+    auto_send_to_label_studio: true
+
+# Dataset Configuration
+# ---------------------
+dataset:
+  raw_data_path: "data/raw/invoices"
+  processed_data_path: "data/processed"
+  
+  # Répartition train/val/test
+  split_ratios:
+    train: 0.8
+    val: 0.1
+    test: 0.1
+
+# Labels Configuration
+# --------------------
+labels:
+  - numero_facture
+  - date_facture
+  - montant_ht
+  - montant_tva
+  - montant_ttc
+  - nom_fournisseur
+  - adresse_fournisseur
+  - siret_fournisseur
+  - ligne_produit
+
+# Notifications (optionnel)
+# --------------------------
+notifications:
+  # Slack webhook pour notifications
+  slack_webhook: ""
+  
+  # Email (nécessite configuration SMTP)
+  email:
+    enabled: false
+    smtp_server: "smtp.gmail.com"
+    smtp_port: 587
+    from_email: "your-email@gmail.com"
+    to_email: "admin@yourcompany.com"
+    password: "YOUR_APP_PASSWORD"
+
+# Monitoring & Logging
+# --------------------
+monitoring:
+  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  log_file: "logs/system.log"
+  
+  # Dashboard
+  dashboard:
+    enabled: true
+    port: 8001
+
+# Auto-Retrain Schedule
+# ----------------------
+auto_retrain:
+  enabled: false  # Mettre true pour activer
+  # Cron format: minute hour day month weekday
+  # Exemple: "0 3 * * *" = tous les jours à 3h du matin
+  schedule: "0 3 * * *"
