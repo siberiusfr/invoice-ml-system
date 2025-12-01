@@ -11,6 +11,8 @@ from typing import List, Dict, Optional
 from PIL import Image
 import fitz  # PyMuPDF
 from datetime import datetime
+import pytesseract
+import re
 
 from .models import ExtractedField, InvoiceExtraction, BoundingBox
 
@@ -100,6 +102,85 @@ class InvoiceExtractor:
         doc.close()
         return img
 
+    def _extract_text_from_bbox(self, image: np.ndarray, x1: float, y1: float,
+                                 x2: float, y2: float, label_name: str) -> str:
+        """
+        Extraire le texte d'une région de l'image avec OCR
+
+        Args:
+            image: Image complète au format numpy array
+            x1, y1, x2, y2: Coordonnées du bounding box (en pixels)
+            label_name: Nom du label pour optimiser l'OCR
+
+        Returns:
+            Texte extrait et nettoyé
+        """
+        try:
+            # Extraire la région d'intérêt (ROI)
+            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+            roi = image[y1:y2, x1:x2]
+
+            # Vérifier que la ROI n'est pas vide
+            if roi.size == 0:
+                return ""
+
+            # Prétraitement de l'image pour améliorer l'OCR
+            # Convertir en niveaux de gris
+            if len(roi.shape) == 3:
+                roi_gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+            else:
+                roi_gray = roi
+
+            # Augmenter la taille pour améliorer la précision
+            scale_factor = 2
+            roi_resized = cv2.resize(roi_gray, None, fx=scale_factor, fy=scale_factor,
+                                    interpolation=cv2.INTER_CUBIC)
+
+            # Améliorer le contraste
+            roi_enhanced = cv2.equalizeHist(roi_resized)
+
+            # Débruitage
+            roi_denoised = cv2.fastNlMeansDenoising(roi_enhanced)
+
+            # Binarisation adaptative pour améliorer la lisibilité
+            roi_binary = cv2.adaptiveThreshold(
+                roi_denoised, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                cv2.THRESH_BINARY, 11, 2
+            )
+
+            # Configuration Tesseract basée sur le type de champ
+            custom_config = r'--oem 3 --psm 6'  # PSM 6: assume a single uniform block of text
+
+            # Pour les nombres, optimiser la configuration
+            if any(label in label_name.lower() for label in ['montant', 'numero', 'tva']):
+                custom_config = r'--oem 3 --psm 7 -c tessedit_char_whitelist=0123456789.,-€$%'
+
+            # Extraire le texte
+            text = pytesseract.image_to_string(roi_binary, lang='fra+eng', config=custom_config)
+
+            # Nettoyage du texte
+            text = text.strip()
+            text = re.sub(r'\s+', ' ', text)  # Remplacer espaces multiples par un seul
+
+            # Nettoyage spécifique selon le type de champ
+            if 'montant' in label_name.lower():
+                # Extraire les nombres avec décimales
+                match = re.search(r'[\d\s]+[.,]\d{2}', text)
+                if match:
+                    text = match.group(0).replace(' ', '').replace(',', '.')
+            elif 'numero' in label_name.lower():
+                # Garder uniquement les alphanumériques pour les numéros
+                text = re.sub(r'[^A-Za-z0-9-]', '', text)
+            elif 'date' in label_name.lower():
+                # Essayer de normaliser le format de date
+                text = re.sub(r'[^\d/\-.]', '', text)
+
+            return text if text else ""
+
+        except Exception as e:
+            print(f"⚠️  Erreur OCR sur le champ {label_name}: {e}")
+            return ""
+
     def extract_from_file(self, file_path: str) -> InvoiceExtraction:
         """
         Extraire les données d'une facture
@@ -146,9 +227,14 @@ class InvoiceExtractor:
             class_id = int(box.cls[0])
             label_name = results.names[class_id]
 
-            # TODO: Implémenter OCR pour extraire le texte
-            # Pour l'instant, on met une valeur placeholder
-            value = f"[À extraire avec OCR]"
+            # Extraire le texte avec OCR
+            value = self._extract_text_from_bbox(
+                image, x1, y1, x2, y2, label_name
+            )
+
+            # Si l'OCR n'a rien extrait, marquer comme vide
+            if not value:
+                value = "[Non détecté]"
 
             field = ExtractedField(
                 label=label_name,
