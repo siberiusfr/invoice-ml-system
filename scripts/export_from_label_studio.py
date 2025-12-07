@@ -14,7 +14,7 @@ import json
 import yaml
 from pathlib import Path
 from datetime import datetime
-from label_studio_sdk import Client
+from label_studio_sdk import LabelStudio
 
 # Couleurs
 class Colors:
@@ -48,26 +48,28 @@ def export_annotations(config):
     # Connexion
     print(f"{Colors.YELLOW}📡 Connexion à Label Studio...{Colors.RESET}")
     try:
-        ls = Client(
-            url=config['label_studio']['url'],
+        client = LabelStudio(
+            base_url=config['label_studio']['url'],
             api_key=config['label_studio']['api_key']
         )
         print(f"{Colors.GREEN}✅ Connecté !{Colors.RESET}\n")
     except Exception as e:
         print(f"{Colors.RED}❌ Erreur de connexion : {e}{Colors.RESET}")
         exit(1)
-    
+
     # Récupérer le projet
     try:
-        project = ls.get_project(config['label_studio']['project_id'])
+        project = client.projects.get(id=config['label_studio']['project_id'])
         print(f"{Colors.GREEN}📁 Projet : {project.title}{Colors.RESET}")
     except Exception as e:
         print(f"{Colors.RED}❌ Projet non trouvé : {e}{Colors.RESET}")
         exit(1)
-    
+
     # Récupérer les tâches
     print(f"{Colors.YELLOW}🔍 Récupération des tâches...{Colors.RESET}")
-    tasks = project.get_tasks()
+    tasks_obj = client.tasks.list(project=project.id)
+    # Convertir les objets Task en dictionnaires pour compatibilité
+    tasks = [task.model_dump() if hasattr(task, 'model_dump') else task.dict() for task in tasks_obj]
     
     # Filtrer les tâches complètes (annotées)
     completed_tasks = [t for t in tasks if t.get('annotations')]
